@@ -1,0 +1,101 @@
+<!doctype html>
+<title>PHP Web Shell</title>
+<link href="bootstrap.css" rel="stylesheet">
+<button class="btn" id="run">RUN</button>
+<button class="btn" id="next">NEXT</button>
+<script src="/socket.io/socket.io.js"></script>
+<script src="term.js"></script>
+<script>
+;(function() {
+  window.onload = function() {
+    var socket = io.connect();
+    var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/php")
+        editor.getSession().setUseWorker(false);
+        editor.getSession().setMode("ace/mode/javascript");
+    
+ 
+    socket.on('connect', function() {
+      var term = new Terminal({
+        cols: 50,
+        rows: 30,
+        useStyle: true,
+        screenKeys: true
+      });
+
+
+       
+       function tryRunning()
+      {
+         var codeArray = editor.getSession().getDocument().getAllLines();
+         for(var i=0;i<codeArray.length;i++){
+            var code = codeArray[i];
+            console.log(code);
+            socket.emit('data',code+'\n');
+            //term.write(code);
+         }
+      }
+
+      var pointer = 0;
+      function getNext()
+      {
+          var codeArray = editor.getSession().getDocument().getAllLines();
+          var code = codeArray[pointer];
+          if(pointer < codeArray.length){
+            console.log(pointer);
+            console.log(code);
+            socket.emit('data',code+'\n');
+            pointer = pointer + 1;
+          }
+      }
+
+      document.getElementById("run").addEventListener("click",tryRunning );      
+      document.getElementById("next").addEventListener("click",getNext );  
+
+      term.on('data', function(data) {
+        socket.emit('data', data);
+      });
+
+      term.on('title', function(title) {
+        document.title = title;
+      });
+
+      term.open(document.getElementById("terminal"));
+
+      term.write('\x1b[31mWelcome to PHP Web Shell!\x1b[m\r\n');
+      
+
+      socket.on('data', function(data) {
+        term.write(data);
+      });
+
+      socket.on('disconnect', function() {
+        term.destroy();
+      });
+    });
+  };
+}).call(this);
+</script>
+ <div class="container-fluid">
+<div class="row-fluid">
+<div id="terminal" class="span3">
+</div>
+<div class="span9" style="position:relative;">
+<div  class="span6"  id="editor" style="position:absolute;top:0;bottom:0;left:0;right:0;height:610px;width:700px">
+echo "hiii";
+echo "bye";
+$arr = [];
+$arr[0]=5000;
+$arr["hiii"]=2000;
+$arr["kill"]=00;
+$arr[5]=$arr;
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js" type="text/javascript" charset="utf-8"></script>
