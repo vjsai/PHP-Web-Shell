@@ -9,7 +9,7 @@ var http = require('http')
   , express = require('express')
   , io = require('socket.io')
   , pty = require('pty.js')
-  , terminal = require('../');
+  , terminal = require('term.js');
 
 /**
  * term.js
@@ -38,8 +38,8 @@ term = pty.fork(process.env.SHELL || 'sh', [], {
   name: require('fs').existsSync('/usr/share/terminfo/x/xterm-256color')
     ? 'xterm-256color'
     : 'xterm',
-  cols: 50,
-  rows: 30,
+  cols: 97,
+  rows: 12,
   cwd: process.env.HOME
 });
 term.write('./boris/bin/boris\n');
@@ -77,13 +77,14 @@ app.use(function(req, res, next) {
 });
 
 app.use(express.basicAuth(function(user, pass, next) {
-  if (user !== 'php' || pass !== 'shell') {
+  if (user !== 'foo' || pass !== 'bar') {
     return next(true);
   }
   return next(null, user);
 }));
 
 app.use(express.static(__dirname));
+app.use("/styles", express.static(__dirname + '/styles'));
 app.use(terminal.middleware());
 
 if (!~process.argv.indexOf('-n')) {
