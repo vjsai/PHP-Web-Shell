@@ -6,6 +6,6 @@ PHP REPL Web shell
 Todo :
  - Create online console
  - Add support for docker
- - Write a VagrantFile
  - Add PHP Koans
  - Use boris for REPL
+ - Adding Vagrant Support
